@@ -1,0 +1,1 @@
+SELECT ABS(-25.76823) absolute, SIGN(-25.76823) sign, ROUND(-25.76823, 2) as rounded;
