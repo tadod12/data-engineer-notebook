@@ -1,0 +1,1 @@
+SELECT EXTRACT(MONTH FROM CURRENT_DATE) as current_month;
