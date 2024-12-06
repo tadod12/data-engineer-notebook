@@ -14,3 +14,7 @@ Notes for some Data Engineering Book
 
     <img src="docs/dw_toolkit.jpg" style="width:200px;">
     
+4. Hadoop The Definitive Guide: Storage and Analysis at Internet Scale by Tom White
+
+    <img src="docs/hadoop_the_definitive_guide.jpg" style="width:200px;">
+    
