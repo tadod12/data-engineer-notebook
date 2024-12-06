@@ -67,6 +67,12 @@ to failure:
   to prevent the edit log from becoming too large. However, the state of the secondary namenode lags that of the
   primary, so in the event of total failure of the primary, data loss is almost certain.
 
+Workflow between _Primary Namenode_ and _Secondary Namenode_
+
+- _Secondary Namenode_ copy namespace image and edit logs from _Primary Namenode_
+- When edit logs become too large, _Secondary Namenode_ merge them into namespace image and empty all logs
+- Then send updated image and empty log to _Primary Namenode_
+
 ### Block Caching
 
 Normally a datanode reads blocks from disk, but for frequently accessed files the blocks may be explicitly cached in the
