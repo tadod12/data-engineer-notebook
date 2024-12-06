@@ -10,3 +10,7 @@ Notes for some Data Engineering Book
 
     <img src="docs/python_crash_course.jpg" style="width:200px;"/>
 
+3. The Data Warehouse Toolkit: The Definitive Guide to Dimensional Modeling by Ralph Kimball
+
+    <img src="docs/dw_toolkit.jpg" style="width:200px;">
+    
