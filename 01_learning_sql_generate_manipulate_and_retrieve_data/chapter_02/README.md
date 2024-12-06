@@ -194,7 +194,7 @@ Run `.sql` file from `sakila-db` server
 
 ## The Sakila Database
 
-![sakila_database.png](/sakila-db/sakila_database.png)
+![sakila_database](../sakila-db/sakila_database.png)
 
 **Customer SQL Schema Statement**
 
