@@ -1,0 +1,41 @@
+Reading Data from a Hadoop URL
+One of the simplest ways to read a file from a Hadoop filesystem is by using a java.net.URL object to open a stream to
+read the data from. The general idiom is:
+
+    InputStream in = null;
+    try {
+        in = new URL("hdfs://host/path").openStream();
+        // process in
+    } finally {
+        IOUtils.closeStream(in);
+    }
+
+There’s a little bit more work required to make Java recognize Hadoop’s hdfs URL scheme. This is achieved by calling the
+setURLStreamHandlerFactory() method on URL with an instance of FsUrlStreamHandlerFactory. This method can be called only
+once per JVM, so it is typically executed in a static block. This limitation means that if some other part of your
+program—perhaps a third-party component outside your control—sets a URLStreamHandlerFactory, you won’t be able to use
+this approach for reading data from Hadoop. The next section discusses an alternative. Example 3-1 shows a program for
+displaying files from Hadoop filesystems on standard output, like the Unix cat command.
+
+Example 3-1. Displaying files from a Hadoop filesystem on standard output using a URLStreamHandler
+
+    public class URLCat {
+        static {
+            URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory());
+        }
+
+        public static void main(String[] args) throws Exception {
+            InputStream in = null;
+            try {
+                in = new URL(args[0]).openStream();
+                IOUtils.copyBytes(in, System.out, 4096, false);
+            } finally {
+                IOUtils.closeStream(in);
+            }
+        }
+    }
+
+We make use of the handy IOUtils class that comes with Hadoop for closing the stream in the final clause, and also for
+copying bytes between the input stream and the output stream (System.out, in this case). The last two arguments to the
+copyBytes() method are the buffer size used for copying and whether to close the streams when the copy is complete. We
+close the input stream ourselves, and System.out doesn’t need to be closed.
