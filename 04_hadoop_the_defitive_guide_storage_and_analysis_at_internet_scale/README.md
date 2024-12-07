@@ -12,4 +12,6 @@ Source code just to read & copy
 
 ## Part II. MapReduce
 
+## Part IV. Related Projects
 
+- Chapter 17. Hive
