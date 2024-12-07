@@ -18,3 +18,6 @@ Notes for some Data Engineering Book
 
     <img src="docs/hadoop_the_definitive_guide.jpg" style="width:200px;">
     
+5. Spark The Definitive Guide: Big Data Processing Made Simple
+
+    <img src="docs/spark_the_definitive_guide.jpg" style="width:200px;">
