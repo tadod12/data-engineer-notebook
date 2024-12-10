@@ -21,3 +21,7 @@ Notes for some Data Engineering Book
 5. Spark The Definitive Guide: Big Data Processing Made Simple
 
     <img src="docs/spark_the_definitive_guide.jpg" style="width:200px;">
+
+6. Data Pipelines with Apache Airflow
+
+    <img src="docs/data_pipelines_with_airflow.jpg" style="width:200px;">
