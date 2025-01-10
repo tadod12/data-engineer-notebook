@@ -17,6 +17,10 @@
 
 # Part III. Low-Level APIs
 
-- Chap 12: Resilient Distributed Datasets (RDDs)
-- Chap 13: Advanced RDDs
+- Chap 12. Resilient Distributed Datasets (RDDs)
+- Chap 13. Advanced RDDs
+- Chap 14. Distributed Shared Variables
 
+# Part IV. Production Applications
+
+- Chap 15. How Spark Runs on a Cluster
