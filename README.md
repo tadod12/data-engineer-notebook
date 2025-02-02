@@ -25,3 +25,7 @@ Notes for some Data Engineering Book
 6. Data Pipelines with Apache Airflow
 
     <img src="docs/data_pipelines_with_airflow.jpg" style="width:200px;">
+
+7. High Performance Spark: Best Practices for Scaling & Optimizing Apache Spark
+
+    <img src="docs/high_performance_spark.jpg" style="width:200px;">
