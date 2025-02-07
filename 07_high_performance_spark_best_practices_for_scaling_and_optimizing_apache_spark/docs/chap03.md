@@ -7,6 +7,7 @@ Spark SQL and its DataFrames and Datasets interfaces are the future of Spark per
 > This chapter focus on how to best use Spark SQL's tools and how to intermix Spark SQL with traditional Spark operations
 
 Like RDDs, `DataFrames` and `Datasets` represent distributed collections, with additional schema information not found in RDDs, provide a more efficient
+
 - Storage layer (Tungsten)
 - Optimization (Catalyst can perform additional optimizations)
 
@@ -29,7 +30,7 @@ One of the more important shortcuts is `enableHiveSupport()`, which will give yo
 ## Spark SQL Dependencies
 
 Add Spark SQL and Hive component to sbt build
-    
+
     libraryDependencies ++= Seq(
         "org.apache.spark" %% "spark-sql" % "2.0.0",
         "org.apache.spark" %% "spark-hive" % "2.0.0")
@@ -137,7 +138,7 @@ For computing multiple different aggregations, or more complex aggregations, you
         pandas
             .groupBy(pandas("zip"))
             .agg(
-                min(pandas("pandaSize")), 
+                min(pandas("pandaSize")),
                 mean(pandas("pandaSize"))
             )
     }
@@ -155,17 +156,17 @@ When creating a window you specify what columns the window is over, the order of
     val windowSpec = Window
         .orderBy(pandas("age"))
         .partitionBy(pandas("zip"))
-        .rowsBetween(start = -10, end = 10) 
+        .rowsBetween(start = -10, end = 10)
         // can use rangeBetween for range instead
 
-    val pandaRelativeSizeCol = 
+    val pandaRelativeSizeCol =
         pandas("pandaSize") - avg(pandas("pandaSize")).over(windowSpec)
 
     pandas.select(
-        pandas("name"), 
-        pandas("zip"), 
-        pandas("pandaSize"), 
-        pandas("age"), 
+        pandas("name"),
+        pandas("zip"),
+        pandas("pandaSize"),
+        pandas("age"),
         pandaRelativeSizeCol.as("panda_relative_size")
     )
 
@@ -178,7 +179,7 @@ When creating a window you specify what columns the window is over, the order of
 **Set-like operations**
 
 | Operation name | Cost      |
-|----------------|-----------|
+| -------------- | --------- |
 | `unionAll`     | Low       |
 | `intersect`    | Expensive |
 | `except`       | Expensive |
@@ -209,7 +210,19 @@ Spark SQL has a different way of loading and saving data than core Spark. To be 
 
 ### DataFrameWriter and DataFrameReader
 
-67/356
+The `DataFrameWriter` is accessed by calling `write` on a `DataFrame` or `Dataset`. The `DataFrameReader` can be accessed through `read` on a `SQLContext`
+
+### Formats
+
+**JSON**
+
+Spark SQL is able to infer a schema for us by sampling the records. Loading JSON data is more expensive than loading many data sources, since Spark needs to read some of the records to determine the schema information
+
+If the schema between records varies widely (or the number of records is very small),you can increase the percentage of records read to determine the schema by setting `samplingRatio` to a higher value
+
+    val df2 = session.read.format("json")
+        .option("samplingRatio", "1.0")
+        .load(path)
 
 ## Datasets
 
