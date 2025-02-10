@@ -224,6 +224,178 @@ If the schema between records varies widely (or the number of records is very sm
         .option("samplingRatio", "1.0")
         .load(path)
 
+**JDBC**
+
+The JDBC data source represents a natural Spark SQL data source, one that supports many of the same operations
+
+> You need to add the JAR for your JDBC data sources
+
+If you are submitting your Spark job with `spark-submit` you can download the required JARs to the host you are launching and include them by specifying `--jars` or supply the Maven coordinates to `--packages`
+
+    spark-submit --jars ./resources/mysql-connector-java-5.1.38.jar, ./path/to/another/jar
+
+> **JdbcDialects** allow Spark to correctly map the JDBC types to the corresponding Spark SQL types
+
+The convenience wrapper `JDBC` accepts the URL, table, and a `java.util.Properties` object for connection properties (such as authentication information)
+
+    spark.read.jdbc("jdbc:dialect:serverName;user=user;password=pass", "table", new Properties)
+
+    spark.read.format("jdbc")
+        .option("url", "jdbc:dialect:serverName")
+        .option("dbtable", "table").load()
+
+ The API for saving a `DataFrame` is very similar to the API used for loading. The `save()` function needs no path since the information is already specified
+
+    df.write.jdbc("jdbc:dialect:serverName;user=user;password=pass", "table", new Properties)
+
+    df.write.format("jdbc")
+        .option("url", "jdbc:dialect:serverName")
+        .option("user", "user")
+        .option("password", "pass")
+        .option("dbtable", "table").save()
+
+**Parquet**
+
+Apache Parquet’s popularity comes from a number of features, including the ability to easily split across multiple files, compression, nested types, and many others discussed in the Parquet documentation
+
+Parquet data source option
+
+![Parquet data source options](img/parquet_data_source_options.png)
+
+More code in [SQLDataSourceExample.scala](../code/SQLDataSourceExample.scala)
+
+**Hive tables**
+
+One option for bringing in data from a Hive table is writing a SQL query against it and having the result as a `DataFrame`
+
+    // Initialize a Spark session with Hive support enabled and configures it to connect to a Hive Metastore.
+    val sparkSession = SparkSession.builder()
+        .appName("example-spark-scala-read-and-write-from-hive")
+        .config("hive.metastore.warehouse.dir", params.hiveHost + "user/hive/warehouse")
+        .enableHiveSupport()
+        .getOrCreate()
+
+    // Read entire HIVE table
+    df = spark.table(<HIVE_DB>.<HIVE_TBL>)
+
+    // Read the partial table based on SQL query
+    df = spark.sql(<YOUR_SQL_QUERY>)
+
+    // Write
+    df.write.saveAsTable("pandas")
+
+When loading a Hive table Spark SQL will convert the metadata and cache the result. If the underlying metadata has changed you can use `sqlContext.refreshTable("tablename")` to update the metadata, or the caching can be disabled by setting `spark.sql.parquet.cacheMetadata` to false.
+
+**RDDs**
+
+Spark SQL `DataFrames` can easily be converted to RDDs of `Row` objects, and can also be created from RDDs of `Row` objects as well as JavaBeans, Scala case classes, and tuples
+
+> RDDs are a special-case data source, since when going to/from RDDs, the data remains inside of Spark without writing out to or reading from an external system
+
+>  Converting a DataFrame to an RDD is a transformation (not an action); however, converting an RDD to a DataFrame or Dataset may involve computing (or sampling some of) the input RDD
+
+When you create a `DataFrame` from an RDD, Spark SQL needs to add schema information. If you are creating the DataFrame from an RDD of case classes or plain old Java objects (POJOs), Spark SQL is able to use reflection to automatically determine the schema
+
+    def createFromCaseClassRDD(input: RDD[PandaPlace]) = {
+        // Create DataFrame explicitly using spark session and schema inference
+        val df1 = spark.createDataFrame(input)
+
+        // Create DataFrame using session implicits and schema inference
+        val df2 = input.toDF()
+
+        // Create a Row RDD from our RDD of case classes
+        val rowRDD = input.map(pm => Row(pm.name,
+            pm.pandas.map(pi => Row(pi.id, pi.zip, pi.happy, pi.attributes))))
+
+        val pandasType = ArrayType(StructType(List(
+            StructField("id", LongType, true),
+            StructField("zip", StringType, true),
+            StructField("happy", BooleanType, true),
+            StructField("attributes", ArrayType(FloatType), true)
+        )))
+
+        // Create DataFrame explicitly with specified schema
+        val schema = StructType(List(
+            StructField("name", StringType, true),
+            StructField("pandas", pandasType)
+        ))
+
+        val df3 = session.createDataFrame(rowRDD, schema)
+    }
+
+Converting a DataFrame to an RDD is incredibly simple; however, you get an RDD of `Row` objects. Since a row can contain anything, you need to specify the type (or cast the result) as you fetch the values for each column in the row. With Datasets you can directly get back an RDD templated on the same type, which can make the conversion back to a useful RDD much simpler.
+
+    // Convert a DataFrame
+    def toRDD(input: DataFrame): RDD[RawPanda] = {
+        val rdd: RDD[Row] = input.rdd  // dataframe to rdd
+        rdd.map(
+            row => RawPanda(row.getAs[Long](0),
+                            row.getAs[String](1),
+                            row.getAs[String](2),
+                            row.getAs[Boolean](3),
+                            row.getAs[Array[Double]](4)))
+    }
+
+**Local collections**
+
+The same memory requirements apply; namely, the entire contents of the DataFrame will be in-memory in the driver program
+
+    def createFromLocal(input: Seq[PandaPlace]) = {
+        session.createDataFrame(input)
+    }
+
+Collecting the result locally
+
+    def collectDF(df: DataFrame) = {
+        val result: Array[Row] = df.collect()
+        result
+    }
+
+> Just as with RDDs, do not collect large DataFrames back to the driver. For Python users, it is important to remember that toPan das() collects the data locally
+
+**Additional formats**
+
+As with core Spark, the data formats that ship directly with Spark only begin to scratch the surface of the types of systems with which you can interact. Some vendors publish their own implementations, and many are published on Spark Packages
+
+Spark packages can be included in your application in a few different ways
+- At runtime: Using `--packages` on the command line
+- At compile time: 2 options
+    - Add the Maven coordinates to your builds
+    - Build with sbt
+
+```
+./bin/spark-shell --packages com.databricks:spark-csv_2.11:1.5.0    
+
+"com.databricks" % "spark-csv_2.11" % "1.5.0"
+```
+
+### Save Modes
+
+In core Spark, saving RDDs always requires that the target directory does not exist, which can make appending to existing tables challenging. With Spark SQL, you can specify the desired behavior when writing out to a path that may already have data
+
+| Save Mode | Behavior |
+|-----------|----------|
+| `ErrorIfExists` | Throws an exception if the target already exists. If target doesn’t exist write the data out. |
+| `Append` | If target already exists, append the data to it. If the data doesn't exist write the data out. |
+| `Overwrite` | If the target already exists, delete the target. Write the data out. |
+| `Ignore` | If the target already exists, silently skip writing out. Otherwise write out the data. |
+
+### Partitions (Discovery and Writing)
+
+Partition data is an important part of Spark SQL since it powers one of the key optimizations to allow reading only the required data. If you know how your downstream consumers may access your data (e.g., reading data based on zip code), when you write your data it is beneficial to use that information to partition your output
+
+> When reading the data, it’s useful to understand how partition discovery functions, so you can have a better understanding of whether your filter can be pushed down
+
+Save partitioned by zip code
+
+    def writeOutByZip(input: DataFrame): Unit = {
+        input.write.partitionBy("zipcode")
+            .format("json")
+            .save("output/")
+    }
+
+In addition to splitting the data by a partition key, it can be useful to make sure the resulting file sizes are reasonable, especially if the results will be used downstream by another Spark job.
+
 ## Datasets
 
 ## Extending with User-Defined Functions and Aggregate Functions (UDFs, UDAFs)
