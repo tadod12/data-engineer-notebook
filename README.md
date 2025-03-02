@@ -29,3 +29,7 @@ Notes for some Data Engineering Book
 7. High Performance Spark: Best Practices for Scaling & Optimizing Apache Spark
 
     <img src="docs/high_performance_spark.jpg" style="width:200px;">
+
+8. Docker Up and Running: Shipping Reliable Containers in Production
+
+    <img src="docs/docker_up_and_running.jpg" style="width:200px;">
