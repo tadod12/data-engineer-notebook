@@ -95,4 +95,126 @@ Mounting `/mnt/session_data` to `/data` within the container
 
 If the container application is designed to write into `/data`, then this data will be visible on the host filesystem in `/mnt/session_data` and would remain available when this container was stopped and a new container started with the same volume mounted
 
-> 89/222
+A new command was added that allows the root volume of your container to be mounted read-only so that processes within the container cannot write anything to the root filesystem
+
+    docker run -rm -ti --read-only=true -v /mnt/session_data:/data \
+        ubuntu:latest /bin/bash
+
+### Resource Quotas
+
+The `docker create` command directly supports configuring CPU and memory restrictions when you create a container
+
+**CPU shares**
+
+Docker thinks of CPU in terms of “cpu shares.” The computing power of all the CPU cores in a system is considered to be the full pool of shares. 1024 is the number that Docker assigns to represent the full pool
+
+> Note that these are not exclusive shares, meaning that assigning all 1024 shares to a container does not prevent all other containers from running
+
+`stress` command - When we run `stress` without ant cgroup constraints, it will use as many resources as we tell it to
+
+    docker run --rm -ti progrium/stress \
+        --cpu 2 --io 1 --vm 2 --vm-bytes 128M --timeoue 120s
+
+> More in page 92
+
+**CPU pinning**
+
+This means that work for this container will only be scheduled on the cores that been assigned to this container
+
+    docker run --rm -ti -c 512 --cpuset=0 progrium/stress \
+        --cpu 2 --io 1 --vm 2 --vm-bytes 128M --timeout 120s
+
+The `--cpuset` argument is zero-indexed, so your first CPU core is 0 (Another example: `cpuset=0,1,2`)
+
+**Memory**
+
+While constraining the CPU only impacts the application's priority CPU time, the memory limit is _hard_ limit
+
+    docker run --rm -ti -m 512m progrium/stress \
+        --cpu 2 --io 1 --vm 2 --vm-bytes 128M --timeout 120s
+
+> Docker supports `b`, `k`, `m`, `g`, representing bytes, kilobytes, megabytes, or gigabytes
+
+The `--memory-swap` option defines the total amount of memory and swap available to the container
+
+    docker run --rm -ti -m 512m --memory-swap=768m progrium/stress \
+        --cpu 2 --io 1 --vm 2 --vm-bytes 128M --timeout 120s
+
+This container can have access to 512 MB of memory and 256 MB of additional swap space
+
+**ulimits** - Page 94
+
+## Starting a Container
+
+`docker run`
+- `docker create` to create the container
+- `docker start` to start the container
+
+Run separately
+
+    docker create -p 6379:6379 redis:2.8
+
+    docker ps -a
+
+    docker start 6b785f78b75e
+
+## Auto Restarting a Container
+
+In many cases, we want our containers to restart if they exit. THe way we tell Docker to do that is by passing the `--restart` argument to the `docker run` command. It takes three values: `no`, `always`, `on-failure:#`
+
+    docker run -ti --restart=on-failure:3 -m 200m --memory-swap=300m \
+        progrium/stress --cpu 2 --io 1 --vm 2 --vm-bytes 128M --timeout 120s
+
+## Stopping a Container
+
+When stopped, the process is not paused; it actually exits. On reboot, docker will attempt to start all of the containers that were running at shutdown. We can pause a Docker container with `docker pause` and `unpause`
+
+    docker stop 6b785f78b75e
+
+> Although memory contents will have been lost, all of the container’s filesystem contents and metadata, including environment variables and port bindings, are saved and will still be in place when you restart the container
+
+    docker stop -t 6b785f78b75e
+
+This tells Docker to initially send a `SIGTERM` signal as before, but then if the container has not stopped within 25 seconds, to send a `SIGKILL` signal to forcefully kill it
+
+## Killing a Container
+
+Exit immediately
+
+    docker kill 6b785f78b75e
+
+## Pausing and Unpausing a Container
+
+Pausing leverages the `cgroup` freezer, which essentially just prevent your process from being scheduled until you unfreeze it
+
+## Cleaning Up Containers and Images
+
+List all the containers and delete
+
+    docker ps -a
+
+    docker rm 92b797f12af1
+
+List all the images and delete
+    
+    docker images
+
+    docker rmi 873c28292d23
+
+> If you try to delete an image that is in use by a container, you will get a _Conflict, cannot delete_ error. You should stop and delete the container(s) first
+
+Delete all of the containers
+
+    docker rm $(docker ps -a -q)
+
+Delete all the images
+
+    docker rmi $(docker images -q -)
+
+To remove all containers that exited with a nonzero state, you can use this filter
+
+    docker rm $(docker ps -a -q --filter 'exited!=0')
+
+And to remove all untagged images, you can type:
+
+    docker rmi $(docker images -q -f "dangling=true")
