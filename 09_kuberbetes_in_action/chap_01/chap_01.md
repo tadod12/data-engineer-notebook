@@ -98,3 +98,40 @@ SKIP
 
 ## 1.3. Introducing Kubernetes
 
+### 1.3.1. Understanding its origins
+
+### 1.3.2. Looking at Kubernetes from the top of a mountain
+
+Kubernetes abstracts away the underlying infrastructure and simplifies development, deployment, and management for both development and the operations teams
+
+**UNDERSTANDING THE CORE OF WHAT KUBERNETES DOES**
+
+![Kubernetes exposes the whole datacenter as a single deployment platform](<../assets/chap_01/k8s-expose.png>)
+
+The developer can specify that certain apps must run together and Kubernetes will deploy them on the same worker node. Others will be spread around the cluster, but they can talk to each other in the same way, regardless of where they’re deployed
+
+### 1.3.3. Understanding the architecture of a Kubernetes cluster
+
+At the hardware level, a Kubernetes cluster is composed of many nodes, which can be split into two types
+- The _master_ node, which hosts the _Kubernetes Control Plane_ that controls and manages the whole Kubernetes system
+- _Worker_ nodes that run the actual application you deploy
+
+![ The components that make up a Kubernetes cluster](../assets/chap_01/k8s-component.png)
+
+**THE CONTROL PLANE** - Controls the cluster and makes it function. It consists of multiple components that can run on a single master node or be split across multiple nodes and replicated to ensure high acailability
+
+- The _Kubernetes API Server_, which you and the other Control Plane components communicate with (if replicate)
+- The _Scheduler_: Schedules - Assigns a worker node to each deployable component of your application
+- The _Controller Manager_ performs cluster-level functions, such as replicating components, keeping track of worker nodes, handling node failures, ...
+- _etcd_ - a reliable distributed data store that persistently stores the cluster configuration
+
+> The components of the Control Plane hold and control the state of the cluster, but they don't run your application. This is done by the (worker) nodes
+
+**THE NODES** - The worker nodes are the machines that run your containerized applications. The task of running, monitoring, and providing services to your application is done by the following components
+
+- Docker, or another _container runtime_, which runs your containers
+- The _Kubelet_ - talks to API server and manages containers on its node
+- The _Kubernetes Service Proxy (kube-proxy)_ which load-balances network traffic between application components
+
+
+
