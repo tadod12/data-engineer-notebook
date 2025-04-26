@@ -36,3 +36,65 @@ It would be ideal if applications could run in the exact same environment during
 
 ## 1.2. Introducing container technologies
 
+Kubernetes uses Linux container technologies to provide isolation of running applications
+
+### 1.2.1. Understanding what containers are
+
+VM Problem: wasting hardware resources + needs to be configured and managed individually = wasting human resources
+
+**ISOLATING COMPONENTS WITH LINUX CONTAINER TECHNOLOGIES**
+
+Using Linux container technologies: run multiple services on the same host machine, while not only exposing a different environment to each of them, but also isolating them from each other, similarly to VMs, but with much less overhead
+
+A process running in a container runs inside the host's operating system, but the process in the container is still isolated from other processes
+
+**COMPARING VIRTUAL MACHINES TO CONTAINERS**
+
+![Using VMs to isolate groups of applications vs. isolating individual apps with containers](../assets/chap_01/vm-container.png)
+
+Containers are much more lightweight
+- VM needs to run its own set of system processes which requires additional compute resources
+- Container is nothing more than a single isolated process running in the host OS, consuming only the resources that the app contumes
+
+**INTRODUCING THE MECHANISMS THAT MAKE CONTAINER ISOLATION POSSIBLE**
+
+- _Linux Namespaces_ - Makes sure each process sees its own personal view of the system (files, processes, network interfaces, hostname, ...)
+- _Linux Conttrol Groups (cgroups)_ - Limit the amount of resources the process can consume (CPU, memory, network bandwidth, ...)
+
+**ISOLATING PROCESSES WITH LINUX NAMESPACES**
+
+All system resources, such as filesystems, process IDs, user IDs, network interfaces, and others, belong to the single namespace (You can create additional namespaces and organize resources across them)
+
+Multiple kinds of namespaces exist, so a process doesn't belong to one namespace, but to one namespace of each kind
+- Mount (mnt)
+- Process ID (pid)
+- Network (net)
+- Inter-process communication (ipc)
+- UTS (About hostname and domain name)
+- User ID (user)
+
+**LIMITING RESOURCES AVAILABLE TO A PROCESS**
+
+Cgroups limits the resource usage of a process (or a group of processes)
+
+### 1.2.2. Introducing the Docker container platform
+
+A big difference between Docker-based container images and VM images is that container images are composed of layers, which can be shared and reused across multiple images
+
+**UNDERSTANDING DOCKER CONCEPTS**
+
+![Docker images, registries, and containers](../assets/chap_01/docker.png)
+
+Three main concepts in Docker
+- _Images_ - A Docker-based container image is something you package your application and its environment into
+- _Registries_ - A Docker Registry is a repository that stores your Docker images and facilitates easy sharing os those images between different people and computers
+- _Containers_ - A Docker-based container is a regular Linux container created from a Docker-based container image
+
+> It should also be clear that a containerized app built for a specific hardware architecture can only run on other machines that have the same architecture. You can’t containerize an application built for the x86 architecture and expect it to run on an ARM-based machine because it also runs Docker. You still need a VM for that
+
+### 1.2.3. Introducing rkt - an alternative to Docker
+
+SKIP
+
+## 1.3. Introducing Kubernetes
+
