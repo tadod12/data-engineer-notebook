@@ -33,3 +33,7 @@ Notes for some Data Engineering Book
 8. Docker Up and Running: Shipping Reliable Containers in Production
 
     <img src="docs/docker_up_and_running.jpg" style="width:200px;">
+
+9. Kubernetes in action
+
+    <img src="docs/kubernetes_in_action.jpg" style="width:200px;">
