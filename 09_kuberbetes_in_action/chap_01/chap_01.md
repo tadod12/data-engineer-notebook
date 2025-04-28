@@ -133,5 +133,59 @@ At the hardware level, a Kubernetes cluster is composed of many nodes, which can
 - The _Kubelet_ - talks to API server and manages containers on its node
 - The _Kubernetes Service Proxy (kube-proxy)_ which load-balances network traffic between application components
 
+> We’ll explain all these components in detail in chapter 11. I’m not a fan of explaining how things work before first explaining what something does and teaching people to use it. It’s like learning to drive a car. You don’t want to know what’s under the hood. You first want to learn how to drive it from point A to point B. Only after you learn how to do that do you become interested in how a car makes that possible. After all, knowing what’s under the hood may someday help you get the car moving again after it breaks down and leaves you stranded at the side of the road. - Well said bro
 
+### 1.3.4. Running an application in Kubernetes
+
+Package it up into one or more container images, push those images to an image registry, and then post a description of your app to the Kubernetes API server
+
+The description includes:
+- The container image or images that contain you application components
+- How those components are related to each other, which ones need to be run co-located (together on the same node) and which don't
+- How many copies (or _replicas_) for each component
+- Which of those components provide a service to either internal or external clients and should be exposed through a single IP address and made discoverable to the other components
+
+**UNDERSTANDING HOW THE DESCRIPTION RESULTS IN A RUNNING CONTAINER**
+
+When the API server processes your app's description
+- Scheduler schedules the specified groups of container onto the available worker nodes (based on computational resources required by each group and the unallocated resources on each node at that moment)
+- Kubelet on those nodes instructs the Container Runtime to pull the required container images and run the containers
+
+![A basic overview of the Kubernetes architecture and an application running on top of it](../assets/chap_01/k8s-overview.png)
+
+**KEEPING THE CONTAINERS RUNNING**
+
+Once the application is running, Kubernetes continuously makes sure that the deployed state of the application always matches the description you provided
+
+> Similarly, if a whole worker node dies or becomes inaccessible, Kubernetes will select new nodes for all the containers that were running on the node and run them on the newly selected nodes.
+
+**SCALING THE NUMBER OF COPIES**
+
+While the application is running, you can decide you want to increase or decrease the number of copies, and Kubernetes will spin up additional ones or stop the excess ones, respectively. You can even leave the job of deciding the optimal number of copies to Kubernetes. It can automatically keep adjusting the number, based on real-time metrics, such as CPU load, memory consumption, queries per second, or any other metric your app exposes
+
+**HITTING A MOVING TARGET**
+
+To allow clients to easily find containers that provide a specific service, you can tell Kubernetes which containers provide the same service and Kubernetes will expose all of them at a single static IP address and expose that address to all applications running in the cluster
+
+The kube-proxy will make sure connections to the service are load balanced across all the containers that provide the service. The IP address of the service stays constant, so clients can always connect to its containers, even when they're moved around the cluster
+
+### 1.3.5. Understanding the benefits of using Kubernetes
+
+**SIMPLIFYING APPLICATION DEPLOYMENT**
+
+**ACHIEVING BETTER UTILIZATION OF HARDWARE**
+
+When you tell Kubernetes to run your application, you’re letting it choose the most appropriate node to run your application on based on the description of the application’s resource requirements and the available resources on each node
+
+> The app is allowed to freely move around the cluster, ensures the node's hardware resources are utilized as best as possible
+
+**HEALTH CHECKING AND SELF-HEALING**
+
+Kubernetes monitors your app components and the nodes they run on and automatically reschedules them to other nodes in the event of a node failure
+
+**AUTOMATIC SCALING**
+
+**SIMPLIFYING APPLICATION DEVELOPMENT**
+
+## 1.4. Summary
 
