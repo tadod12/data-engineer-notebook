@@ -1,5 +1,3 @@
 # Kubernetes in action
 
-## Kubernetes resources coverd in the book
-
-| Resource (abbr.) [API version] | Description |
+![Kubernetes in action](../docs/kubernetes_in_action.jpg)
