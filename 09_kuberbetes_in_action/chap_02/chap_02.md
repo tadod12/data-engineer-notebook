@@ -28,4 +28,13 @@
 
 ### 2.1.2. Creating a trivial Node.js app
 
+[🥩App.js](trivial-app/app.js)
 
+### 2.1.3. Creating a Dockerfile for the image
+
+[🐋Dockerfile](trivial-app/Dockerfile)
+
+### 2.1.4. Building the container image
+
+    // inside ./trivial-app
+    docker build -t kubia .
